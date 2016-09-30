@@ -5,6 +5,7 @@
 
 #include "error.hpp"
 #include "error_or.hpp"
+#include "iovec.hpp"
 #include "range.hpp"
 #include "string_view.hpp"
 #include "types.hpp"
@@ -42,18 +43,18 @@ public:
 		return error(cloudabi_sys_fd_close(fd_));
 	}
 
-	static error_or<unique_fd> create1() {
+	static error_or<unique_fd> create1(filetype ft) {
 		fd result;
-		if (auto err = cloudabi_sys_fd_create1(CLOUDABI_FILETYPE_POLL, &result.fd_)) {
+		if (auto err = cloudabi_sys_fd_create1(cloudabi_filetype_t(ft), &result.fd_)) {
 			return error(err);
 		} else {
 			return unique_fd(result);
 		}
 	}
 
-	static error_or<std::pair<unique_fd, unique_fd>> create_pipe() {
+	static error_or<std::pair<unique_fd, unique_fd>> create2(filetype ft) {
 		fd a, b;
-		if (auto err = cloudabi_sys_fd_create2(CLOUDABI_FILETYPE_FIFO, &b.fd_, &b.fd_)) {
+		if (auto err = cloudabi_sys_fd_create2(cloudabi_filetype_t(ft), &b.fd_, &b.fd_)) {
 			return error(err);
 		} else {
 			return std::make_pair(unique_fd(a), unique_fd(b));
@@ -73,6 +74,15 @@ public:
 		}
 	}
 
+	error_or<size_t> pread(range<iovec const> iov, filesize offset) {
+		size_t n_read;
+		if (auto err = cloudabi_sys_fd_pread(fd_, (const cloudabi_iovec_t *)iov.data(), iov.size(), offset, &n_read)) {
+			return error(err);
+		} else {
+			return n_read;
+		}
+	}
+
 	error replace(fd const & from) {
 		return error(cloudabi_sys_fd_replace(from.fd_, fd_));
 	}
@@ -83,20 +93,20 @@ public:
 
 	// cloudabi_sys_file_ syscalls.
 
-	error file_allocate(filesize_t offset, filesize_t len) {
+	error file_allocate(filesize offset, filesize len) {
 		return error(cloudabi_sys_file_allocate(fd_, offset, len));
 	}
 
-	error file_create(string_view path, cloudabi_filetype_t type) {
-		return error(cloudabi_sys_file_create(fd_, path.data(), path.size(), type));
+	error file_create(string_view path, filetype type) {
+		return error(cloudabi_sys_file_create(fd_, path.data(), path.size(), cloudabi_filetype_t(type)));
 	}
 
 	error file_symlink(string_view path, string_view contents) {
 		return error(cloudabi_sys_file_symlink(contents.data(), contents.size(), fd_, path.data(), path.size()));
 	}
 
-	error file_unlink(string_view path, cloudabi_ulflags_t flags = 0) {
-		return error(cloudabi_sys_file_unlink(fd_, path.data(), path.size(), flags));
+	error file_unlink(string_view path, ulflags flags = ulflags::none) {
+		return error(cloudabi_sys_file_unlink(fd_, path.data(), path.size(), cloudabi_ulflags_t(flags)));
 	}
 
 	// cloudabi_sys_poll_fd syscall.
@@ -139,16 +149,16 @@ public:
 		return error(cloudabi_sys_sock_connect(fd_, dir.fd_, path.data(), path.size()));
 	}
 
-	error sock_listen(cloudabi_backlog_t backlog) {
-		return error(cloudabi_sys_sock_listen(fd_, backlog));
+	error sock_listen(backlog bl) {
+		return error(cloudabi_sys_sock_listen(fd_, bl));
 	}
 
-	error sock_shutdown(cloudabi_sdflags_t how) {
-		return error(cloudabi_sys_sock_shutdown(fd_, how));
+	error sock_shutdown(sdflags how) {
+		return error(cloudabi_sys_sock_shutdown(fd_, cloudabi_sdflags_t(how)));
 	}
 
-	error sock_stat_get(cloudabi_sockstat_t & stat, cloudabi_ssflags_t flags = 0) {
-		return error(cloudabi_sys_sock_stat_get(fd_, &stat, flags));
+	error sock_stat_get(cloudabi_sockstat_t & stat, ssflags flags = ssflags::none) {
+		return error(cloudabi_sys_sock_stat_get(fd_, &stat, cloudabi_ssflags_t(flags)));
 	}
 
 	// TODO: More syscalls.

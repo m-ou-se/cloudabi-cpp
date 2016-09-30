@@ -10,43 +10,43 @@ namespace cloudabi {
 template<typename T>
 struct range {
 
-	range() : begin_(nullptr), end_(nullptr) {}
+	range() : _begin(nullptr), _size(0) {}
 
-	range(T * b, T * e) : begin_(b), end_(e) {}
+	range(T * b, size_t s) : _begin(b), _size(s) {}
 
-	range(T & x) : begin_(&x), end_(&x+1) {}
+	range(T * b, T * e) : _begin(b), _size(e - b) {}
 
-	template<std::size_t n> range(T (&x)[n]) : begin_(&x[0]), end_(&x[n]) {}
+	range(T & x) : _begin(&x), _size(1) {}
+
+	template<std::size_t n> range(T (&x)[n]) : _begin(&x[0]), _size(n) {}
 
 	template<std::size_t n> range(std::array<T, n> & x)
-		: begin_(x.empty() ? nullptr : &*x.begin()), end_(begin_ + x.size()) {}
+		: _begin(x.empty() ? nullptr : &*x.begin()), _size(x.size()) {}
 
 	template<std::size_t n> range(std::array<std::remove_const_t<T>, n> const & x)
-		: begin_(x.empty() ? nullptr : &*x.begin()), end_(begin_ + x.size()) {}
+		: _begin(x.empty() ? nullptr : &*x.begin()), _size(x.size()) {}
 
-	range(std::vector<T> & x) : begin_(&*x.begin()), end_(begin_ + x.size()) {}
+	range(std::vector<T> & x) : _begin(&*x.begin()), _size(x.size()) {}
 
-	range(std::vector<std::remove_const_t<T>> const & x) : begin_(&*x.begin()), end_(begin_ + x.size()) {}
+	range(std::vector<std::remove_const_t<T>> const & x) : _begin(&*x.begin()), _size(x.size()) {}
 
-	template<typename T2> range(range<T2> const & r) : begin_(r.begin()), end_(r.end()) {}
+	template<typename T2> range(range<T2> const & r) : _begin(r.begin()), _size(r.size()) {}
 
-	T & operator [] (std::size_t i) const { return begin_[i]; }
+	T & operator [] (std::size_t i) const { return _begin[i]; }
 
-	T *   begin() const { return begin_; }
-	T *     end() const { return   end_; }
-	T * & begin()       { return begin_; }
-	T * &   end()       { return   end_; }
+	T *   begin() const { return _begin; }
+	T *     end() const { return _begin + _size; }
+	T * & begin()       { return _begin; }
+	T * &   end()       { return _begin + _size; }
 
-	std::size_t size() volatile const { return std::size_t(end_ - begin_); }
+	std::size_t size() volatile const { return _size; }
 
-	T * data() const { return begin_; }
+	T * data() const { return _begin; }
 
-	bool empty() volatile const { return size() == 0; }
+	bool empty() volatile const { return _size == 0; }
 
-private:
-	T * begin_;
-	T *   end_;
-
+	T * _begin;
+	size_t _size;
 };
 
 }

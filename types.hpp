@@ -1,7 +1,14 @@
-#include <cloudabi_types.h>
+#pragma once
+
+#include "cloudabi_raw.hpp"
 
 namespace cloudabi {
 
-using filesize_t = cloudabi_filesize_t;
+using raw::backlog;
+using raw::filesize;
+using raw::filetype;
+using raw::sdflags;
+using raw::ssflags;
+using raw::ulflags;
 
 }
