@@ -155,6 +155,9 @@ public:
 
 };
 
+static_assert(sizeof(fd) == sizeof(cloudabi_fd_t), "");
+static_assert(alignof(fd) == alignof(cloudabi_fd_t), "");
+
 inline void fd_closer::operator () (fd f) { f.close(); }
 
 }
