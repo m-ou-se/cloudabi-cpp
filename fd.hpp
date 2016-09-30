@@ -91,6 +91,17 @@ public:
 		return error(cloudabi_sys_fd_sync(fd_));
 	}
 
+	// cloudabi_sys_mem_map syscall.
+
+	error_or<void *> mem_map(size_t len, filesize off = 0, mprot prot = mprot::read, mflags flags = mflags::private_, void * addr = nullptr) {
+		void * mem;
+		if (auto err = cloudabi_sys_mem_map(addr, len, cloudabi_mprot_t(prot), cloudabi_mflags_t(flags), fd_, off, &mem)) {
+			return error(err);
+		} else {
+			return mem;
+		}
+	}
+
 	// cloudabi_sys_file_ syscalls.
 
 	error file_allocate(filesize offset, filesize len) {
@@ -169,5 +180,9 @@ static_assert(sizeof(fd) == sizeof(cloudabi_fd_t), "");
 static_assert(alignof(fd) == alignof(cloudabi_fd_t), "");
 
 inline void fd_closer::operator () (fd f) { f.close(); }
+
+inline error_or<void *> mem_map(size_t len, mprot prot = mprot::read | mprot::write, mflags flags = mflags::private_, void * addr = nullptr) {
+	return fd(CLOUDABI_MAP_ANON).mem_map(len, 0, prot, flags, addr);
+}
 
 }
