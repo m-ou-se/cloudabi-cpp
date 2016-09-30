@@ -172,6 +172,15 @@ public:
 		return error(cloudabi_sys_sock_stat_get(fd_, &stat, cloudabi_ssflags_t(flags)));
 	}
 
+	friend inline error file_link(fd fd1, string_view path1, fd fd2, string_view path2, bool follow_symlinks) {
+		cloudabi_lookup_t lookup = {fd1.fd_, follow_symlinks ? CLOUDABI_LOOKUP_SYMLINK_FOLLOW : 0u};
+		return error(cloudabi_sys_file_link(lookup, path1.data(), path1.size(), fd2.fd_, path2.data(), path2.size()));
+	}
+
+	friend inline error file_rename(fd fd1, string_view path1, fd fd2, string_view path2) {
+		return error(cloudabi_sys_file_rename(fd1.fd_, path1.data(), path1.size(), fd2.fd_, path2.data(), path2.size()));
+	}
+
 	// TODO: More syscalls.
 
 };
