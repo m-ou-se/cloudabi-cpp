@@ -5,6 +5,7 @@
 
 #include "error.hpp"
 #include "error_or.hpp"
+#include "range.hpp"
 #include "string_view.hpp"
 #include "types.hpp"
 
@@ -96,6 +97,58 @@ public:
 
 	error file_unlink(string_view path, cloudabi_ulflags_t flags = 0) {
 		return error(cloudabi_sys_file_unlink(fd_, path.data(), path.size(), flags));
+	}
+
+	// cloudabi_sys_poll_fd syscall.
+	
+	error_or<size_t> poll(
+		range<cloudabi_subscription_t const> in,
+		range<cloudabi_event_t> out,
+		cloudabi_subscription_t const & timeout
+	) {
+		size_t n_events;
+		if (auto err = cloudabi_sys_poll_fd(fd_, in.data(), in.size(), out.data(), out.size(), &timeout, &n_events)) {
+			return error(err);
+		} else{
+			return n_events;
+		}
+	}
+
+	// cloudabi_sys_proc_exec syscall.
+
+	error proc_exec(range<unsigned char const> data, range<fd const> fds) {
+		return error(cloudabi_sys_proc_exec(fd_, data.data(), data.size(), (cloudabi_fd_t *)fds.data(), fds.size()));
+	}
+
+	// cloudabi_sys_sock_ syscalls.
+
+	error_or<unique_fd> sock_accept(cloudabi_sockstat_t & sockstat) {
+		fd conn;
+		if (auto err = cloudabi_sys_sock_accept(fd_, &sockstat, &conn.fd_)) {
+			return error(err);
+		} else {
+			return unique_fd(conn);
+		}
+	}
+
+	error sock_bind(fd dir, string_view path) {
+		return error(cloudabi_sys_sock_bind(fd_, dir.fd_, path.data(), path.size()));
+	}
+
+	error sock_connect(fd dir, string_view path) {
+		return error(cloudabi_sys_sock_connect(fd_, dir.fd_, path.data(), path.size()));
+	}
+
+	error sock_listen(cloudabi_backlog_t backlog) {
+		return error(cloudabi_sys_sock_listen(fd_, backlog));
+	}
+
+	error sock_shutdown(cloudabi_sdflags_t how) {
+		return error(cloudabi_sys_sock_shutdown(fd_, how));
+	}
+
+	error sock_stat_get(cloudabi_sockstat_t & stat, cloudabi_ssflags_t flags = 0) {
+		return error(cloudabi_sys_sock_stat_get(fd_, &stat, flags));
 	}
 
 	// TODO: More syscalls.
