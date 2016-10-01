@@ -1,0 +1,3 @@
+[submodule "cloudabi"]
+	path = cloudabi
+	url = https://github.com/nuxinl/cloudabi
