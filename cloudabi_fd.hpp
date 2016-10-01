@@ -196,10 +196,23 @@ public:
 		}
 	}
 
-	// TODO: file_stat_fget
-	// TODO: file_stat_fput
-	// TODO: file_stat_get
-	// TODO: file_stat_put
+	error_or<void> file_stat_fget(filestat & stat) {
+		return error(cloudabi_sys_file_stat_fget(fd_, (cloudabi_filestat_t *)&stat));
+	}
+
+	error_or<void> file_stat_fput(filestat const & stat, fsflags flags) {
+		return error(cloudabi_sys_file_stat_fput(fd_, (cloudabi_filestat_t const *)&stat, cloudabi_fsflags_t(flags)));
+	}
+
+	error_or<void> file_stat_get(string_view path, filestat & stat, bool follow_symlinks = true) {
+		cloudabi_lookup_t lookup = {fd_, follow_symlinks ? CLOUDABI_LOOKUP_SYMLINK_FOLLOW : 0u};
+		return error(cloudabi_sys_file_stat_get(lookup, path.data(), path.size(), (cloudabi_filestat_t *)&stat));
+	}
+
+	error_or<void> file_stat_put(string_view path, filestat const & stat, fsflags flags, bool follow_symlinks = true) {
+		cloudabi_lookup_t lookup = {fd_, follow_symlinks ? CLOUDABI_LOOKUP_SYMLINK_FOLLOW : 0u};
+		return error(cloudabi_sys_file_stat_put(lookup, path.data(), path.size(), (cloudabi_filestat_t const *)&stat, cloudabi_fsflags_t(flags)));
+	}
 
 	error_or<void> file_symlink(string_view path, string_view contents) {
 		return error(cloudabi_sys_file_symlink(contents.data(), contents.size(), fd_, path.data(), path.size()));
