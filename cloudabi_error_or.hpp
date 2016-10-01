@@ -22,7 +22,8 @@ public:
 	// Implicit conversions from both cloudabi::error and T.
 
 	error_or(cloudabi::error e) : error_(e) {
-		assert(error_ != cloudabi::error(0));
+		// An error_or<T> without an error needs a value.
+		assert(!ok());
 	}
 
 	error_or(T value) {
@@ -60,7 +61,7 @@ public:
 		} else if (other.ok()) {
 			new (&value_) T(std::move(other.value_));
 		}
-		error_ = other.error;
+		error_ = other.error_;
 	}
 
 	error_or & operator = (error_or const & other) {
@@ -71,7 +72,7 @@ public:
 		} else if (other.ok()) {
 			new (&value_) T(other.value_);
 		}
-		error_ = other.error;
+		error_ = other.error_;
 	}
 
 	// Destructor.
@@ -82,7 +83,7 @@ public:
 
 	// Explicit accessors.
 
-	bool ok() const { return error_ == cloudabi::error(0); }
+	bool ok() const { return error_ != cloudabi::error(0); }
 
 	cloudabi::error error() const { return error_; }
 
@@ -100,60 +101,114 @@ public:
 
 	T       * operator -> ()       { return value_; }
 	T const * operator -> () const { return value_; }
+
+	// Comparison between error_or and error.
+
+	friend inline bool operator == (error_or a, enum error b) {
+		return a.error_ == b;
+	}
+
+	friend inline bool operator != (error_or a, enum error b) {
+		return a.error_ != b;
+	}
+
+	friend inline bool operator == (enum error a, error_or b) {
+		return a == b.error_;
+	}
+
+	friend inline bool operator != (enum error a, error_or b) {
+		return a != b.error_;
+	}
+
+	// Comparison between error_or and T.
+
+	friend inline bool operator == (error_or a, T const & b) {
+		if (a.error_) return false;
+		return a.value_ == b;
+	}
+
+	friend inline bool operator != (error_or a, T const & b) {
+		if (a.error_) return true;
+		return a.value_ != b;
+	}
+
+	friend inline bool operator == (T const & a, error_or b) {
+		if (b.error_) return false;
+		return a == b.value_;
+	}
+
+	friend inline bool operator != (T const & a, error_or b) {
+		if (b.error_) return true;
+		return a != b.value_;
+	}
+
+	// Comparison between error_ors.
+
+	template<typename T1, typename T2> friend inline bool operator == (error_or<T1> a, error_or<T2> b) {
+		if (a.error_ != b.error_) return false;
+		if (a.error_) return true;
+		return a.value_ == b.value_;
+	}
+
+	template<typename T1, typename T2> friend inline bool operator != (error_or<T1> a, error_or<T2> b) {
+		if (a.error_ != b.error_) return true;
+		if (a.error_) return false;
+		return a.value_ != b.value_;
+	}
+
 };
 
-// Comparison between error_or and error.
+template<>
+class error_or<void> {
 
-template<typename T> inline bool operator == (error_or<T> a, error b) {
-	return a.error() == b;
-}
+private:
 
-template<typename T> inline bool operator != (error_or<T> a, error b) {
-	return a.error() != b;
-}
+	cloudabi::error error_ = cloudabi::error::inval;
 
-template<typename T> inline bool operator == (error a, error_or<T> b) {
-	return a == b.error();
-}
+public:
 
-template<typename T> inline bool operator != (error a, error_or<T> b) {
-	return a != b.error();
-}
+	// Implicit conversions from both cloudabi::error and T.
 
-// Comparison between error_or and T.
+	error_or(cloudabi::error e) : error_(e) {}
 
-template<typename T> inline bool operator == (error_or<T> a, T const & b) {
-	if (!a.ok()) return false;
-	return a.value() == b;
-}
+	error_or() : error_(cloudabi::error(0)) {}
 
-template<typename T> inline bool operator != (error_or<T> a, T const & b) {
-	if (!a.ok()) return true;
-	return a.value() != b;
-}
+	// Accessors.
 
-template<typename T> inline bool operator == (T const & a, error_or<T> b) {
-	if (!b.ok()) return false;
-	return a == b.value();
-}
+	bool ok() const { return error_ != cloudabi::error(0); }
 
-template<typename T> inline bool operator != (T const & a, error_or<T> b) {
-	if (!b.ok()) return true;
-	return a != b.value();
-}
+	explicit operator bool() const { return ok(); }
 
-// Comparison between error_ors.
+	cloudabi::error error() const { return error_; }
 
-template<typename T1, typename T2> inline bool operator == (error_or<T1> a, error_or<T2> b) {
-	if (a.error() != b.error()) return false;
-	if (!a.ok()) return true;
-	return a.value() == b.value();
-}
+	// Comparison between error_or and error.
 
-template<typename T1, typename T2> inline bool operator != (error_or<T1> a, error_or<T2> b) {
-	if (a.error() != b.error()) return true;
-	if (!a.ok()) return false;
-	return a.value() != b.value();
-}
+	friend inline bool operator == (error_or a, enum error b) {
+		return a.error_ == b;
+	}
+
+	friend inline bool operator != (error_or a, enum error b) {
+		return a.error_ != b;
+	}
+
+	friend inline bool operator == (enum error a, error_or b) {
+		return a == b.error_;
+	}
+
+	friend inline bool operator != (enum error a, error_or b) {
+		return a != b.error_;
+	}
+
+	// Comparison between error_ors.
+
+	friend inline bool operator == (error_or a, error_or b) {
+		return a.error_ == b.error_;
+	}
+
+	friend inline bool operator != (error_or a, error_or b) {
+		return a.error_ != b.error_;
+	}
+
+};
 
 }
