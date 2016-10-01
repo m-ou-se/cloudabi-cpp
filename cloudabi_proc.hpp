@@ -28,7 +28,7 @@ inline error_or<fork_result> proc_fork() {
 	}
 }
 
-inline error proc_raise(signal sig) {
+inline error_or<void> proc_raise(signal sig) {
 	return error(cloudabi_sys_proc_raise(cloudabi_signal_t(sig)));
 }
 

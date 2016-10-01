@@ -42,7 +42,7 @@ public:
 
 	// cloudabi_sys_fd_ syscalls.
 
-	error close() {
+	error_or<void> close() {
 		return error(cloudabi_sys_fd_close(fd_));
 	}
 
@@ -64,7 +64,7 @@ public:
 		}
 	}
 
-	error datasync() {
+	error_or<void> datasync() {
 		return error(cloudabi_sys_fd_datasync(fd_));
 	}
 
@@ -125,7 +125,7 @@ public:
 		return write(range<ciovec const>(iov));
 	}
 
-	error replace(fd const & from) {
+	error_or<void> replace(fd const & from) {
 		return error(cloudabi_sys_fd_replace(from.fd_, fd_));
 	}
 
@@ -138,15 +138,15 @@ public:
 		}
 	}
 
-	error stat_get(fdstat & stat) {
+	error_or<void> stat_get(fdstat & stat) {
 		return error(cloudabi_sys_fd_stat_get(fd_, (cloudabi_fdstat_t *)&stat));
 	}
 
-	error stat_put(fdstat const & stat, fdsflags flags = fdsflags::flags | fdsflags::rights) {
+	error_or<void> stat_put(fdstat const & stat, fdsflags flags = fdsflags::flags | fdsflags::rights) {
 		return error(cloudabi_sys_fd_stat_put(fd_, (cloudabi_fdstat_t *)&stat, cloudabi_fdsflags_t(flags)));
 	}
 
-	error sync() {
+	error_or<void> sync() {
 		return error(cloudabi_sys_fd_sync(fd_));
 	}
 
@@ -163,15 +163,15 @@ public:
 
 	// cloudabi_sys_file_ syscalls.
 
-	error file_advise(filesize offset, filesize len, advice a) {
+	error_or<void> file_advise(filesize offset, filesize len, advice a) {
 		return error(cloudabi_sys_file_advise(fd_, offset, len, cloudabi_advice_t(a)));
 	}
 
-	error file_allocate(filesize offset, filesize len) {
+	error_or<void> file_allocate(filesize offset, filesize len) {
 		return error(cloudabi_sys_file_allocate(fd_, offset, len));
 	}
 
-	error file_create(string_view path, filetype type) {
+	error_or<void> file_create(string_view path, filetype type) {
 		return error(cloudabi_sys_file_create(fd_, path.data(), path.size(), cloudabi_filetype_t(type)));
 	}
 
@@ -201,11 +201,11 @@ public:
 	// TODO: file_stat_get
 	// TODO: file_stat_put
 
-	error file_symlink(string_view path, string_view contents) {
+	error_or<void> file_symlink(string_view path, string_view contents) {
 		return error(cloudabi_sys_file_symlink(contents.data(), contents.size(), fd_, path.data(), path.size()));
 	}
 
-	error file_unlink(string_view path, ulflags flags = ulflags::none) {
+	error_or<void> file_unlink(string_view path, ulflags flags = ulflags::none) {
 		return error(cloudabi_sys_file_unlink(fd_, path.data(), path.size(), cloudabi_ulflags_t(flags)));
 	}
 
@@ -230,7 +230,7 @@ public:
 
 	// cloudabi_sys_proc_exec syscall.
 
-	error proc_exec(range<unsigned char const> data, range<fd const> fds) {
+	error_or<void> proc_exec(range<unsigned char const> data, range<fd const> fds) {
 		return error(cloudabi_sys_proc_exec(fd_, data.data(), data.size(), (cloudabi_fd_t *)fds.data(), fds.size()));
 	}
 
@@ -245,23 +245,23 @@ public:
 		}
 	}
 
-	error sock_bind(fd dir, string_view path) {
+	error_or<void> sock_bind(fd dir, string_view path) {
 		return error(cloudabi_sys_sock_bind(fd_, dir.fd_, path.data(), path.size()));
 	}
 
-	error sock_connect(fd dir, string_view path) {
+	error_or<void> sock_connect(fd dir, string_view path) {
 		return error(cloudabi_sys_sock_connect(fd_, dir.fd_, path.data(), path.size()));
 	}
 
-	error sock_listen(backlog bl) {
+	error_or<void> sock_listen(backlog bl) {
 		return error(cloudabi_sys_sock_listen(fd_, bl));
 	}
 
-	error sock_shutdown(sdflags how) {
+	error_or<void> sock_shutdown(sdflags how) {
 		return error(cloudabi_sys_sock_shutdown(fd_, cloudabi_sdflags_t(how)));
 	}
 
-	error sock_stat_get(sockstat & stat, ssflags flags = ssflags::none) {
+	error_or<void> sock_stat_get(sockstat & stat, ssflags flags = ssflags::none) {
 		return error(cloudabi_sys_sock_stat_get(fd_, (cloudabi_sockstat_t *)&stat, cloudabi_ssflags_t(flags)));
 	}
 
