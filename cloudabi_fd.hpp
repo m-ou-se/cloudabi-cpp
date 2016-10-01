@@ -35,6 +35,8 @@ public:
 
 	explicit operator bool() const { return fd_ != cloudabi_fd_t(-1); }
 
+	cloudabi_fd_t number() const { return fd_; }
+
 	friend bool operator == (fd a, fd b) { return a.fd_ == b.fd_; }
 	friend bool operator != (fd a, fd b) { return a.fd_ != b.fd_; }
 
