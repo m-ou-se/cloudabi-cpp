@@ -4,7 +4,7 @@
 #include <new>
 #include <utility>
 
-#include "error.hpp"
+#include "cloudabi_types.hpp"
 
 namespace cloudabi {
 
@@ -22,14 +22,14 @@ public:
 	// Implicit conversions from both cloudabi::error and T.
 
 	error_or(cloudabi::error e) : error_(e) {
-		assert(error_ != cloudabi::error::no_error);
+		assert(error_ != cloudabi::error(0));
 	}
 
 	error_or(T value) {
 		new (&value_) T(std::move(value));
 		// Only set error to 'no_error' afterwards, to prevent
 		// destructing value_ when the constructor throws an error.
-		error_ = cloudabi::error::no_error;
+		error_ = cloudabi::error(0);
 	}
 
 	// Move and copy constructors.
@@ -38,12 +38,12 @@ public:
 		noexcept(T(std::move(other.value_)))
 	) {
 		if (other.ok()) new (&value_) T(std::move(other.value_));
-		error_ = other.error;
+		error_ = other.error_;
 	}
 
 	error_or(error_or const & other) {
 		if (other.ok()) new (&value_) T(other.value_);
-		error_ = other.error;
+		error_ = other.error_;
 	}
 
 	// Move and copy assignment.
@@ -82,7 +82,7 @@ public:
 
 	// Explicit accessors.
 
-	bool ok() const { return error_ == cloudabi::error::no_error; }
+	bool ok() const { return error_ == cloudabi::error(0); }
 
 	cloudabi::error error() const { return error_; }
 

@@ -25,13 +25,12 @@
 //
 // Source: https://github.com/NuxiNL/cloudabi
 
-#ifndef CLOUDABI_RAW_HPP
-#define CLOUDABI_RAW_HPP
+#ifndef CLOUDABI_TYPES_HPP
+#define CLOUDABI_TYPES_HPP
 
-#include <cloudabi_types_common.h>
+#include <cloudabi_types.h>
 
 namespace cloudabi {
-namespace raw {
 
 enum class advice : cloudabi_advice_t {
   dontneed   = CLOUDABI_ADVICE_DONTNEED,
@@ -40,21 +39,6 @@ enum class advice : cloudabi_advice_t {
   random     = CLOUDABI_ADVICE_RANDOM,
   sequential = CLOUDABI_ADVICE_SEQUENTIAL,
   willneed   = CLOUDABI_ADVICE_WILLNEED,
-};
-
-enum class auxtype : cloudabi_auxtype_t {
-  argdata      = CLOUDABI_AT_ARGDATA,
-  argdatalen   = CLOUDABI_AT_ARGDATALEN,
-  base         = CLOUDABI_AT_BASE,
-  canary       = CLOUDABI_AT_CANARY,
-  canarylen    = CLOUDABI_AT_CANARYLEN,
-  ncpus        = CLOUDABI_AT_NCPUS,
-  null         = CLOUDABI_AT_NULL,
-  pagesz       = CLOUDABI_AT_PAGESZ,
-  phdr         = CLOUDABI_AT_PHDR,
-  phnum        = CLOUDABI_AT_PHNUM,
-  sysinfo_ehdr = CLOUDABI_AT_SYSINFO_EHDR,
-  tid          = CLOUDABI_AT_TID,
 };
 
 using backlog = cloudabi_backlog_t;
@@ -76,7 +60,7 @@ enum class dircookie : cloudabi_dircookie_t {
   start = CLOUDABI_DIRCOOKIE_START,
 };
 
-enum class errno : cloudabi_errno_t {
+enum class error : cloudabi_errno_t {
   _2big          = CLOUDABI_E2BIG,
   acces          = CLOUDABI_EACCES,
   addrinuse      = CLOUDABI_EADDRINUSE,
@@ -183,11 +167,6 @@ enum class eventtype : cloudabi_eventtype_t {
 };
 
 using exitcode = cloudabi_exitcode_t;
-
-enum class fd : cloudabi_fd_t {
-  process_child = CLOUDABI_PROCESS_CHILD,
-  map_anon_fd   = CLOUDABI_MAP_ANON_FD,
-};
 
 enum class fdflags : cloudabi_fdflags_t {
   none     = 0,
@@ -633,7 +612,26 @@ enum class whence : cloudabi_whence_t {
   set = CLOUDABI_WHENCE_SET,
 };
 
-}
+struct event;
+
+struct fdstat;
+
+struct filestat;
+
+struct recv_in;
+
+struct send_in;
+
+struct send_out;
+
+struct sockaddr;
+
+struct sockstat;
+
+struct subscription;
+
+struct recv_out;
+
 }
 
 #endif

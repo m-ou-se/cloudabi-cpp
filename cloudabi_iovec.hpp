@@ -2,7 +2,7 @@
 
 #include <cloudabi_types.h>
 
-#include "range.hpp"
+#include "cloudabi_range.hpp"
 
 namespace cloudabi {
 

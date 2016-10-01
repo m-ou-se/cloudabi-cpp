@@ -3,9 +3,8 @@
 #include <cloudabi_types.h>
 #include <cloudabi_syscalls.h>
 
-#include "error.hpp"
-#include "range.hpp"
-#include "types.hpp"
+#include "cloudabi_range.hpp"
+#include "cloudabi_types.hpp"
 
 namespace cloudabi {
 

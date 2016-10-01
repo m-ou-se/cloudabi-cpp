@@ -1,14 +1,15 @@
+#pragma once
+
 #include <memory>
 
 #include <cloudabi_types.h>
 #include <cloudabi_syscalls.h>
 
-#include "error.hpp"
-#include "error_or.hpp"
-#include "iovec.hpp"
-#include "range.hpp"
+#include "cloudabi_types.hpp"
+#include "cloudabi_error_or.hpp"
+#include "cloudabi_iovec.hpp"
+#include "cloudabi_range.hpp"
 #include "string_view.hpp"
-#include "types.hpp"
 
 namespace cloudabi {
 
@@ -82,9 +83,65 @@ public:
 			return n_read;
 		}
 	}
+	error_or<size_t> pread(iovec iov, filesize offset) {
+		return pread(range<iovec const>(iov), offset);
+	}
+
+	error_or<size_t> pwrite(range<ciovec const> iov, filesize offset) {
+		size_t n_written;
+		if (auto err = cloudabi_sys_fd_pwrite(fd_, (const cloudabi_ciovec_t *)iov.data(), iov.size(), offset, &n_written)) {
+			return error(err);
+		} else {
+			return n_written;
+		}
+	}
+	error_or<size_t> pwrite(ciovec iov, filesize offset) {
+		return pwrite(range<ciovec const>{iov}, offset);
+	}
+
+	error_or<size_t> read(range<iovec const> iov) {
+		size_t n_read;
+		if (auto err = cloudabi_sys_fd_read(fd_, (const cloudabi_iovec_t *)iov.data(), iov.size(), &n_read)) {
+			return error(err);
+		} else {
+			return n_read;
+		}
+	}
+	error_or<size_t> read(iovec iov) {
+		return read(range<iovec const>(iov));
+	}
+
+	error_or<size_t> write(range<ciovec const> iov) {
+		size_t n_written;
+		if (auto err = cloudabi_sys_fd_write(fd_, (const cloudabi_ciovec_t *)iov.data(), iov.size(), &n_written)) {
+			return error(err);
+		} else {
+			return n_written;
+		}
+	}
+	error_or<size_t> write(ciovec iov) {
+		return write(range<ciovec const>(iov));
+	}
 
 	error replace(fd const & from) {
 		return error(cloudabi_sys_fd_replace(from.fd_, fd_));
+	}
+
+	error_or<filesize> seek(filedelta offset, whence wh = whence::cur) {
+		filesize new_offset;
+		if (auto err = cloudabi_sys_fd_seek(fd_, offset, cloudabi_whence_t(wh), &new_offset)) {
+			return error(err);
+		} else {
+			return new_offset;
+		}
+	}
+
+	error stat_get(fdstat & stat) {
+		return error(cloudabi_sys_fd_stat_get(fd_, (cloudabi_fdstat_t *)&stat));
+	}
+
+	error stat_put(fdstat const & stat, fdsflags flags = fdsflags::flags | fdsflags::rights) {
+		return error(cloudabi_sys_fd_stat_put(fd_, (cloudabi_fdstat_t *)&stat, cloudabi_fdsflags_t(flags)));
 	}
 
 	error sync() {
@@ -104,6 +161,10 @@ public:
 
 	// cloudabi_sys_file_ syscalls.
 
+	error file_advise(filesize offset, filesize len, advice a) {
+		return error(cloudabi_sys_file_advise(fd_, offset, len, cloudabi_advice_t(a)));
+	}
+
 	error file_allocate(filesize offset, filesize len) {
 		return error(cloudabi_sys_file_allocate(fd_, offset, len));
 	}
@@ -111,6 +172,32 @@ public:
 	error file_create(string_view path, filetype type) {
 		return error(cloudabi_sys_file_create(fd_, path.data(), path.size(), cloudabi_filetype_t(type)));
 	}
+
+	error_or<unique_fd> file_open(string_view path, oflags flags, fdstat const & init, bool follow_symlinks = true) {
+		fd f;
+		cloudabi_lookup_t lookup = {fd_, follow_symlinks ? CLOUDABI_LOOKUP_SYMLINK_FOLLOW : 0u};
+		if (auto err = cloudabi_sys_file_open(lookup, path.data(), path.size(), cloudabi_oflags_t(flags), (cloudabi_fdstat_t const *)&init, &f.fd_)) {
+			return error(err);
+		} else {
+			return unique_fd(f);
+		}
+	}
+
+	// TODO: file_readdir
+
+	error_or<size_t> file_readlink(string_view path, range<char> buf) {
+		size_t bufused;
+		if (auto err = cloudabi_sys_file_readlink(fd_, path.data(), path.size(), buf.data(), buf.size(), &bufused)) {
+			return error(err);
+		} else {
+			return bufused;
+		}
+	}
+
+	// TODO: file_stat_fget
+	// TODO: file_stat_fput
+	// TODO: file_stat_get
+	// TODO: file_stat_put
 
 	error file_symlink(string_view path, string_view contents) {
 		return error(cloudabi_sys_file_symlink(contents.data(), contents.size(), fd_, path.data(), path.size()));
@@ -121,14 +208,18 @@ public:
 	}
 
 	// cloudabi_sys_poll_fd syscall.
-	
+
 	error_or<size_t> poll(
-		range<cloudabi_subscription_t const> in,
-		range<cloudabi_event_t> out,
-		cloudabi_subscription_t const & timeout
+		range<subscription const> in,
+		range<event> out,
+		subscription const & timeout
 	) {
 		size_t n_events;
-		if (auto err = cloudabi_sys_poll_fd(fd_, in.data(), in.size(), out.data(), out.size(), &timeout, &n_events)) {
+		if (auto err = cloudabi_sys_poll_fd(
+			fd_, (cloudabi_subscription_t const *)in.data(), in.size(),
+			(cloudabi_event_t *)out.data(), out.size(),
+			(cloudabi_subscription_t const *)&timeout, &n_events)
+		) {
 			return error(err);
 		} else{
 			return n_events;
@@ -143,9 +234,9 @@ public:
 
 	// cloudabi_sys_sock_ syscalls.
 
-	error_or<unique_fd> sock_accept(cloudabi_sockstat_t & sockstat) {
+	error_or<unique_fd> sock_accept(sockstat & sockstat) {
 		fd conn;
-		if (auto err = cloudabi_sys_sock_accept(fd_, &sockstat, &conn.fd_)) {
+		if (auto err = cloudabi_sys_sock_accept(fd_, (cloudabi_sockstat_t *)&sockstat, &conn.fd_)) {
 			return error(err);
 		} else {
 			return unique_fd(conn);
@@ -168,8 +259,8 @@ public:
 		return error(cloudabi_sys_sock_shutdown(fd_, cloudabi_sdflags_t(how)));
 	}
 
-	error sock_stat_get(cloudabi_sockstat_t & stat, ssflags flags = ssflags::none) {
-		return error(cloudabi_sys_sock_stat_get(fd_, &stat, cloudabi_ssflags_t(flags)));
+	error sock_stat_get(sockstat & stat, ssflags flags = ssflags::none) {
+		return error(cloudabi_sys_sock_stat_get(fd_, (cloudabi_sockstat_t *)&stat, cloudabi_ssflags_t(flags)));
 	}
 
 	friend inline error file_link(fd fd1, string_view path1, fd fd2, string_view path2, bool follow_symlinks) {
@@ -180,8 +271,6 @@ public:
 	friend inline error file_rename(fd fd1, string_view path1, fd fd2, string_view path2) {
 		return error(cloudabi_sys_file_rename(fd1.fd_, path1.data(), path1.size(), fd2.fd_, path2.data(), path2.size()));
 	}
-
-	// TODO: More syscalls.
 
 };
 
