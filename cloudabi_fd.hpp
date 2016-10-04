@@ -22,6 +22,8 @@ struct fd_closer {
 
 using unique_fd = std::unique_ptr<fd, fd_closer>;
 
+struct sock_accept_result;
+
 struct fd {
 
 private:
@@ -138,9 +140,7 @@ public:
 		}
 	}
 
-	error_or<void> stat_get(fdstat & stat) {
-		return error(cloudabi_sys_fd_stat_get(fd_, (cloudabi_fdstat_t *)&stat));
-	}
+	error_or<fdstat> stat_get();
 
 	error_or<void> stat_put(fdstat const & stat, fdsflags flags = fdsflags::flags | fdsflags::rights) {
 		return error(cloudabi_sys_fd_stat_put(fd_, (cloudabi_fdstat_t *)&stat, cloudabi_fdsflags_t(flags)));
@@ -196,17 +196,12 @@ public:
 		}
 	}
 
-	error_or<void> file_stat_fget(filestat & stat) {
-		return error(cloudabi_sys_file_stat_fget(fd_, (cloudabi_filestat_t *)&stat));
-	}
+	error_or<filestat> file_stat_fget();
+
+	error_or<filestat> file_stat_get (string_view path, bool follow_symlinks = true);
 
 	error_or<void> file_stat_fput(filestat const & stat, fsflags flags) {
 		return error(cloudabi_sys_file_stat_fput(fd_, (cloudabi_filestat_t const *)&stat, cloudabi_fsflags_t(flags)));
-	}
-
-	error_or<void> file_stat_get(string_view path, filestat & stat, bool follow_symlinks = true) {
-		cloudabi_lookup_t lookup = {fd_, follow_symlinks ? CLOUDABI_LOOKUP_SYMLINK_FOLLOW : 0u};
-		return error(cloudabi_sys_file_stat_get(lookup, path.data(), path.size(), (cloudabi_filestat_t *)&stat));
 	}
 
 	error_or<void> file_stat_put(string_view path, filestat const & stat, fsflags flags, bool follow_symlinks = true) {
@@ -249,14 +244,7 @@ public:
 
 	// cloudabi_sys_sock_ syscalls.
 
-	error_or<unique_fd> sock_accept(sockstat & sockstat) {
-		fd conn;
-		if (auto err = cloudabi_sys_sock_accept(fd_, (cloudabi_sockstat_t *)&sockstat, &conn.fd_)) {
-			return error(err);
-		} else {
-			return unique_fd(conn);
-		}
-	}
+	error_or<sock_accept_result> sock_accept();
 
 	error_or<void> sock_bind(fd dir, string_view path) {
 		return error(cloudabi_sys_sock_bind(fd_, dir.fd_, path.data(), path.size()));
@@ -274,9 +262,7 @@ public:
 		return error(cloudabi_sys_sock_shutdown(fd_, cloudabi_sdflags_t(how)));
 	}
 
-	error_or<void> sock_stat_get(sockstat & stat, ssflags flags = ssflags::none) {
-		return error(cloudabi_sys_sock_stat_get(fd_, (cloudabi_sockstat_t *)&stat, cloudabi_ssflags_t(flags)));
-	}
+	error_or<sockstat> sock_stat_get(ssflags flags = ssflags::none);
 
 	friend inline error file_link(fd fd1, string_view path1, fd fd2, string_view path2, bool follow_symlinks = true) {
 		cloudabi_lookup_t lookup = {fd1.fd_, follow_symlinks ? CLOUDABI_LOOKUP_SYMLINK_FOLLOW : 0u};
@@ -296,6 +282,64 @@ inline void fd_closer::operator () (fd f) { f.close(); }
 
 inline error_or<void *> mem_map(size_t len, mprot prot = mprot::read | mprot::write, mflags flags = mflags::private_, void * addr = nullptr) {
 	return fd(CLOUDABI_MAP_ANON).mem_map(len, 0, prot, flags, addr);
+}
+
+}
+
+#include "cloudabi_structs.hpp"
+
+namespace cloudabi {
+
+error_or<fdstat> fd::stat_get() {
+	fdstat stat;
+	if (auto err = cloudabi_sys_fd_stat_get(fd_, (cloudabi_fdstat_t *)&stat)) {
+		return error(err);
+	} else {
+		return stat;
+	}
+}
+
+inline error_or<filestat> fd::file_stat_fget() {
+	filestat stat;
+	if (auto err = cloudabi_sys_file_stat_fget(fd_, (cloudabi_filestat_t *)&stat)) {
+		return error(err);
+	} else {
+		return stat;
+	}
+}
+
+inline error_or<filestat> fd::file_stat_get(string_view path, bool follow_symlinks) {
+	filestat stat;
+	cloudabi_lookup_t lookup = {fd_, follow_symlinks ? CLOUDABI_LOOKUP_SYMLINK_FOLLOW : 0u};
+	if (auto err = cloudabi_sys_file_stat_get(lookup, path.data(), path.size(), (cloudabi_filestat_t *)&stat)) {
+		return error(err);
+	} else {
+		return stat;
+	}
+}
+
+struct sock_accept_result {
+	unique_fd fd;
+	sockstat sockstat;
+};
+
+error_or<sock_accept_result> fd::sock_accept() {
+	sockstat stat;
+	fd fd;
+	if (auto err = cloudabi_sys_sock_accept(fd_, (cloudabi_sockstat_t *)&stat, &fd.fd_)) {
+		return error(err);
+	} else {
+		return sock_accept_result{unique_fd(fd), stat};
+	}
+}
+
+error_or<sockstat> fd::sock_stat_get(ssflags flags) {
+	sockstat stat;
+	if (auto err = cloudabi_sys_sock_stat_get(fd_, (cloudabi_sockstat_t *)&stat, cloudabi_ssflags_t(flags))) {
+		return error(err);
+	} else {
+		return stat;
+	}
 }
 
 }
