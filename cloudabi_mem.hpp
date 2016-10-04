@@ -4,6 +4,7 @@
 #include <cloudabi_syscalls.h>
 
 #include "cloudabi_error_or.hpp"
+#include "cloudabi_fd.hpp"
 #include "cloudabi_range.hpp"
 #include "cloudabi_types.hpp"
 
@@ -15,6 +16,15 @@ inline error_or<void> mem_advise(range<unsigned char> mem, advice a) {
 
 inline error_or<void> mem_lock(range<unsigned char> mem) {
 	return error(cloudabi_sys_mem_lock(mem.data(), mem.size()));
+}
+
+inline error_or<void *> mem_map(
+	size_t len,
+	mprot prot = mprot::read | mprot::write,
+	mflags flags = mflags::private_,
+	void * addr = nullptr
+) {
+	return fd(CLOUDABI_MAP_ANON).mem_map(len, 0, prot, flags, addr);
 }
 
 inline error_or<void> mem_protect(range<unsigned char> mem, mprot prot) {
