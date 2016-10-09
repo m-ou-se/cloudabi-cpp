@@ -1,4 +1,5 @@
 #include <mstd/range.hpp>
+#include <mstd/string_view.hpp>
 
 #include <cloudabi_types.h>
 #include <cloudabi_syscalls.h>
@@ -8,11 +9,11 @@
 #include "cloudabi_iovec.hpp"
 #include "cloudabi_structs.hpp"
 #include "cloudabi_types.hpp"
-#include "string_view.hpp"
 
 namespace cloudabi {
 
 using mstd::range;
+using mstd::string_view;
 
 inline error_or<void> fd::close() {
 	return error(cloudabi_sys_fd_close(fd_));

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <mstd/range.hpp>
+#include <mstd/string_view.hpp>
 #include <mstd/unique.hpp>
 
 #include <cloudabi_types.h>
@@ -11,12 +12,12 @@
 #include "cloudabi_error_or.hpp"
 #include "cloudabi_iovec.hpp"
 #include "cloudabi_types.hpp"
-#include "string_view.hpp"
 
 namespace cloudabi {
 
-using mstd::unique;
 using mstd::range;
+using mstd::string_view;
+using mstd::unique;
 
 struct fd;
 
