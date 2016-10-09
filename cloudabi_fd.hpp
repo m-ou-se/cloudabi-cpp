@@ -2,25 +2,29 @@
 
 #include <memory>
 
+#include <mstd/range.hpp>
+#include <mstd/unique.hpp>
+
 #include <cloudabi_types.h>
 #include <cloudabi_syscalls.h>
 
 #include "cloudabi_error_or.hpp"
 #include "cloudabi_iovec.hpp"
-#include "cloudabi_range.hpp"
 #include "cloudabi_types.hpp"
 #include "string_view.hpp"
 
 namespace cloudabi {
 
+using mstd::unique;
+using mstd::range;
+
 struct fd;
 
 struct fd_closer {
-	using pointer = fd;
 	void operator () (fd f);
 };
 
-using unique_fd = std::unique_ptr<fd, fd_closer>;
+using unique_fd = unique<fd, fd_closer>;
 
 struct sock_accept_result;
 
@@ -30,9 +34,8 @@ private:
 	cloudabi_fd_t fd_ = -1;
 
 public:
-
 	fd() noexcept {}
-	fd(std::nullptr_t) noexcept {}
+
 	explicit fd(cloudabi_fd_t fd) noexcept : fd_(fd) {}
 
 	explicit operator bool() const { return fd_ != cloudabi_fd_t(-1); }

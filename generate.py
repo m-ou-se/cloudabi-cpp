@@ -153,7 +153,7 @@ class CppStructDefsGenerator(CppGenerator):
                         print('{}  }} {};'.format(indent, x.name))
                 print('{}}};'.format(indent))
             elif isinstance(m, RangeStructMember):
-                print('{}range<{}{}> {};'.format(
+                print('{}mstd::range<{}{}> {};'.format(
                     indent, self.naming.typename(m.target_type),
                     ' const' if m.const else '', m.name))
             else:
@@ -184,10 +184,8 @@ class CppStructDefsGenerator(CppGenerator):
                 memname = path + m.name
                 cmemname1 = path + m.base_name
                 cmemname2 = path + m.length_name
-                print('static_assert(offsetof({}, {}._begin) == offsetof({}, {}), "");'.format(
+                print('static_assert(offsetof({}, {}) == offsetof({}, {}), "");'.format(
                     name, memname, cname, cmemname1))
-                print('static_assert(offsetof({}, {}._size) == offsetof({}, {}), "");'.format(
-                    name, memname, cname, cmemname2))
 
     def generate_types(self, abi, types):
         super().generate_types(abi, types)
@@ -235,10 +233,10 @@ with open('cloudabi_structs.hpp', 'w') as f:
             preamble='#include <atomic>\n'
                      '#include <cstddef>\n'
                      '#include <cstdint>\n\n'
+                     '#include <mstd/range.hpp>\n\n'
                      '#include <cloudabi_types.h>\n\n'
                      '#include "cloudabi_types.hpp"\n'
                      '#include "cloudabi_fd.hpp"\n'
-                     '#include "cloudabi_iovec.hpp"\n'
-                     '#include "cloudabi_range.hpp"\n',
+                     '#include "cloudabi_iovec.hpp"\n',
             skip=cpp_skip
         ).generate_abi(abi)

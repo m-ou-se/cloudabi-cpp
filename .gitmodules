@@ -1,3 +1,6 @@
 [submodule "cloudabi"]
 	path = cloudabi
 	url = https://github.com/nuxinl/cloudabi
+[submodule "mstd"]
+	path = mstd
+	url = https://github.com/m-ou-se/mstd

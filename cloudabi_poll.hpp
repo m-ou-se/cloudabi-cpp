@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mstd/range.hpp>
+
 #include <atomic>
 #include <type_traits>
 
@@ -7,10 +9,11 @@
 #include <cloudabi_syscalls.h>
 
 #include "cloudabi_error_or.hpp"
-#include "cloudabi_range.hpp"
 #include "cloudabi_types.hpp"
 
 namespace cloudabi {
+
+using mstd::range;
 
 inline error_or<size_t> poll(range<subscription const> in, range<cloudabi_event_t> out) {
 	if (out.size() < in.size()) return error::inval;

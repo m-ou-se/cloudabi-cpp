@@ -32,12 +32,13 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <mstd/range.hpp>
+
 #include <cloudabi_types.h>
 
 #include "cloudabi_types.hpp"
 #include "cloudabi_fd.hpp"
 #include "cloudabi_iovec.hpp"
-#include "cloudabi_range.hpp"
 
 namespace cloudabi {
 
@@ -117,29 +118,25 @@ static_assert(offsetof(filestat, st_mtim) == offsetof(cloudabi_filestat_t, st_mt
 static_assert(offsetof(filestat, st_ctim) == offsetof(cloudabi_filestat_t, st_ctim), "");
 
 struct recv_in {
-  range<iovec const> ri_data;
-  range<fd> ri_fds;
+  mstd::range<iovec const> ri_data;
+  mstd::range<fd> ri_fds;
   msgflags ri_flags;
 };
 static_assert(sizeof(recv_in) == sizeof(cloudabi_recv_in_t), "");
 static_assert(alignof(recv_in) == alignof(cloudabi_recv_in_t), "");
-static_assert(offsetof(recv_in, ri_data._begin) == offsetof(cloudabi_recv_in_t, ri_data), "");
-static_assert(offsetof(recv_in, ri_data._size) == offsetof(cloudabi_recv_in_t, ri_datalen), "");
-static_assert(offsetof(recv_in, ri_fds._begin) == offsetof(cloudabi_recv_in_t, ri_fds), "");
-static_assert(offsetof(recv_in, ri_fds._size) == offsetof(cloudabi_recv_in_t, ri_fdslen), "");
+static_assert(offsetof(recv_in, ri_data) == offsetof(cloudabi_recv_in_t, ri_data), "");
+static_assert(offsetof(recv_in, ri_fds) == offsetof(cloudabi_recv_in_t, ri_fds), "");
 static_assert(offsetof(recv_in, ri_flags) == offsetof(cloudabi_recv_in_t, ri_flags), "");
 
 struct send_in {
-  range<ciovec const> si_data;
-  range<fd const> si_fds;
+  mstd::range<ciovec const> si_data;
+  mstd::range<fd const> si_fds;
   msgflags si_flags;
 };
 static_assert(sizeof(send_in) == sizeof(cloudabi_send_in_t), "");
 static_assert(alignof(send_in) == alignof(cloudabi_send_in_t), "");
-static_assert(offsetof(send_in, si_data._begin) == offsetof(cloudabi_send_in_t, si_data), "");
-static_assert(offsetof(send_in, si_data._size) == offsetof(cloudabi_send_in_t, si_datalen), "");
-static_assert(offsetof(send_in, si_fds._begin) == offsetof(cloudabi_send_in_t, si_fds), "");
-static_assert(offsetof(send_in, si_fds._size) == offsetof(cloudabi_send_in_t, si_fdslen), "");
+static_assert(offsetof(send_in, si_data) == offsetof(cloudabi_send_in_t, si_data), "");
+static_assert(offsetof(send_in, si_fds) == offsetof(cloudabi_send_in_t, si_fds), "");
 static_assert(offsetof(send_in, si_flags) == offsetof(cloudabi_send_in_t, si_flags), "");
 
 struct send_out {

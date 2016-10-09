@@ -1,14 +1,17 @@
 #pragma once
 
+#include <mstd/range.hpp>
+
 #include <cloudabi_types.h>
 #include <cloudabi_syscalls.h>
 
 #include "cloudabi_error_or.hpp"
 #include "cloudabi_fd.hpp"
-#include "cloudabi_range.hpp"
 #include "cloudabi_types.hpp"
 
 namespace cloudabi {
+
+using mstd::range;
 
 inline error_or<void> mem_advise(range<unsigned char> mem, advice a) {
 	return error(cloudabi_sys_mem_advise(mem.data(), mem.size(), cloudabi_advice_t(a)));

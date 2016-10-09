@@ -4,10 +4,8 @@
 #include "cloudabi_types.hpp"
 
 // Hand written types.
-#include "cloudabi_error_or.hpp"
 #include "cloudabi_fd.hpp"
 #include "cloudabi_iovec.hpp"
-#include "cloudabi_range.hpp"
 
 // Generated struct definitions.
 #include "cloudabi_structs.hpp"
