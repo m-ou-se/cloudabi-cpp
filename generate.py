@@ -216,7 +216,7 @@ cpp_skip={
     'threadattr',
 }
 
-with open('cloudabi_types.hpp', 'w') as f:
+with open('include/cloudabi/types.hpp', 'w') as f:
     with redirect_stdout(f):
         CppTypeDefsGenerator(
             cnaming=CNaming('cloudabi_'),
@@ -225,7 +225,7 @@ with open('cloudabi_types.hpp', 'w') as f:
             skip=cpp_skip
         ).generate_abi(abi)
 
-with open('cloudabi_structs.hpp', 'w') as f:
+with open('include/cloudabi/structs.hpp', 'w') as f:
     with redirect_stdout(f):
         CppStructDefsGenerator(
             cnaming=CNaming('cloudabi_'),
@@ -235,8 +235,8 @@ with open('cloudabi_structs.hpp', 'w') as f:
                      '#include <cstdint>\n\n'
                      '#include <mstd/range.hpp>\n\n'
                      '#include <cloudabi_types.h>\n\n'
-                     '#include "cloudabi_types.hpp"\n'
-                     '#include "cloudabi_fd.hpp"\n'
-                     '#include "cloudabi_iovec.hpp"\n',
+                     '#include "types.hpp"\n'
+                     '#include "fd.hpp"\n'
+                     '#include "iovec.hpp"\n',
             skip=cpp_skip
         ).generate_abi(abi)

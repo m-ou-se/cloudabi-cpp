@@ -5,8 +5,8 @@
 
 #include <mstd/range.hpp>
 
-#include "cloudabi_error_or.hpp"
-#include "cloudabi_types.hpp"
+#include "error_or.hpp"
+#include "types.hpp"
 
 namespace cloudabi {
 

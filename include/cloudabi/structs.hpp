@@ -36,9 +36,9 @@
 
 #include <cloudabi_types.h>
 
-#include "cloudabi_types.hpp"
-#include "cloudabi_fd.hpp"
-#include "cloudabi_iovec.hpp"
+#include "types.hpp"
+#include "fd.hpp"
+#include "iovec.hpp"
 
 namespace cloudabi {
 

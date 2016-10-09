@@ -5,7 +5,7 @@
 #include <cloudabi_types.h>
 #include <cloudabi_syscalls.h>
 
-#include "cloudabi_error_or.hpp"
+#include "error_or.hpp"
 
 namespace cloudabi {
 
