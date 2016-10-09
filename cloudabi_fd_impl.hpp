@@ -1,3 +1,5 @@
+#pragma once
+
 #include <mstd/range.hpp>
 #include <mstd/string_view.hpp>
 
