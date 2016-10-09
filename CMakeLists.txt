@@ -1,0 +1,8 @@
+project(cloudabi-cpp)
+cmake_minimum_required(VERSION 3.1)
+add_library(cloudabi-cpp INTERFACE)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mstd/CMakeLists.txt)
+	add_subdirectory(mstd)
+endif()
+target_link_libraries(cloudabi-cpp INTERFACE mstd)
+target_include_directories(cloudabi-cpp INTERFACE include)
