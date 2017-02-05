@@ -182,8 +182,8 @@ class CppStructDefsGenerator(CppGenerator):
                             abi, name, cname, x.type.members, x.name + '.')
             elif isinstance(m, RangeStructMember):
                 memname = path + m.name
-                cmemname1 = path + m.base_name
-                cmemname2 = path + m.length_name
+                cmemname1 = path + m.name
+                cmemname2 = path + m.name + '_len'
                 print('static_assert(offsetof({}, {}) == offsetof({}, {}), "");'.format(
                     name, memname, cname, cmemname1))
 
