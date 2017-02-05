@@ -17,10 +17,6 @@ inline error_or<void> mem_advise(range<unsigned char> mem, advice a) {
 	return error(cloudabi_sys_mem_advise(mem.data(), mem.size(), cloudabi_advice_t(a)));
 }
 
-inline error_or<void> mem_lock(range<unsigned char> mem) {
-	return error(cloudabi_sys_mem_lock(mem.data(), mem.size()));
-}
-
 inline error_or<void *> mem_map(
 	size_t len,
 	mprot prot = mprot::read | mprot::write,
@@ -36,10 +32,6 @@ inline error_or<void> mem_protect(range<unsigned char> mem, mprot prot) {
 
 inline error_or<void> mem_sync(range<unsigned char> mem, msflags flags) {
 	return error(cloudabi_sys_mem_sync(mem.data(), mem.size(), cloudabi_msflags_t(flags)));
-}
-
-inline error_or<void> mem_unlock(range<unsigned char> mem) {
-	return error(cloudabi_sys_mem_unlock(mem.data(), mem.size()));
 }
 
 inline error_or<void> mem_unmap(range<unsigned char> mem) {
