@@ -167,10 +167,21 @@ inline error_or<void> fd::file_create(string_view path, filetype type) {
 	return error(cloudabi_sys_file_create(fd_, path.data(), path.size(), cloudabi_filetype_t(type)));
 }
 
-inline error_or<unique_fd> fd::file_open(string_view path, oflags flags, fdstat const & init, bool follow_symlinks) {
+inline error_or<unique_fd> fd::file_open(
+	string_view path,
+	rights base_rights,
+	oflags oflags,
+	fdflags fdflags,
+	rights inheriting_rights,
+	bool follow_symlinks
+) {
 	fd f;
+	cloudabi_fdstat_t stat;
+	stat.fs_rights_base = (cloudabi_rights_t)base_rights;
+	stat.fs_rights_inheriting = (cloudabi_rights_t)inheriting_rights;
+	stat.fs_flags = (cloudabi_fdflags_t)fdflags;
 	cloudabi_lookup_t lookup = {fd_, follow_symlinks ? CLOUDABI_LOOKUP_SYMLINK_FOLLOW : 0u};
-	if (auto err = cloudabi_sys_file_open(lookup, path.data(), path.size(), cloudabi_oflags_t(flags), (cloudabi_fdstat_t const *)&init, &f.fd_)) {
+	if (auto err = cloudabi_sys_file_open(lookup, path.data(), path.size(), cloudabi_oflags_t(oflags), &stat, &f.fd_)) {
 		return error(err);
 	} else {
 		return unique_fd(f);

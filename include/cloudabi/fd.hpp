@@ -97,7 +97,14 @@ public:
 
 	error_or<void> file_create(string_view path, filetype);
 
-	error_or<unique_fd> file_open(string_view path, oflags, fdstat const & init, bool follow_symlinks = true);
+	error_or<unique_fd> file_open(
+		string_view path,
+		rights base_rights,
+		oflags = oflags::none,
+		fdflags = fdflags::none,
+		rights inheriting_rights = rights::none,
+		bool follow_symlinks = true
+	);
 
 	// TODO: file_readdir
 
