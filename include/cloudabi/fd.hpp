@@ -1,7 +1,7 @@
 #pragma once
 
 #include <initializer_list>
-#include <memory>
+#include <utility>
 
 #include <mstd/range.hpp>
 #include <mstd/string_view.hpp>
