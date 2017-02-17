@@ -87,6 +87,10 @@ inline error_or<size_t> fd::read(range<iovec const> iov) {
 	}
 }
 
+inline error_or<size_t> fd::read(std::initializer_list<iovec> iov) {
+	return read(range<iovec const>(iov.begin(), iov.size()));
+}
+
 inline error_or<size_t> fd::read(iovec iov) {
 	return read(range<iovec const>(iov));
 }
@@ -98,6 +102,10 @@ inline error_or<size_t> fd::write(range<ciovec const> iov) {
 	} else {
 		return n_written;
 	}
+}
+
+inline error_or<size_t> fd::write(std::initializer_list<ciovec> iov) {
+	return write(range<ciovec const>(iov.begin(), iov.size()));
 }
 
 inline error_or<size_t> fd::write(ciovec iov) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <initializer_list>
 #include <memory>
 
 #include <mstd/range.hpp>
@@ -65,9 +66,11 @@ public:
 	error_or<size_t> pwrite(ciovec, filesize offset);
 
 	error_or<size_t> read(range<iovec const>);
+	error_or<size_t> read(std::initializer_list<iovec>);
 	error_or<size_t> read(iovec);
 
 	error_or<size_t> write(range<ciovec const>);
+	error_or<size_t> write(std::initializer_list<ciovec>);
 	error_or<size_t> write(ciovec);
 
 	error_or<void> replace(fd const & from);
