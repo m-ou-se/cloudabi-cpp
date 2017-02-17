@@ -16,6 +16,8 @@
 
 namespace cloudabi {
 
+using std::size_t;
+
 using mstd::range;
 using mstd::string_view;
 using mstd::unique;
