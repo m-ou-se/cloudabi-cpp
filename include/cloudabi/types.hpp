@@ -56,10 +56,6 @@ enum class condvar : cloudabi_condvar_t {
 
 enum class device : cloudabi_device_t {};
 
-enum class dircookie : cloudabi_dircookie_t {
-  start = CLOUDABI_DIRCOOKIE_START,
-};
-
 enum class error : cloudabi_errno_t {
   _2big          = CLOUDABI_E2BIG,
   acces          = CLOUDABI_EACCES,

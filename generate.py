@@ -208,6 +208,7 @@ cpp_skip = {
     'auxtype',
     'auxv',
     'ciovec',
+    'dircookie',
     'dirent',
     'fd',
     'lookup',
