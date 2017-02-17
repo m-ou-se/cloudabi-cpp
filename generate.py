@@ -204,7 +204,7 @@ class CppStructDefsGenerator(CppGenerator):
 abi = AbiParser().parse_abi_file(
     os.path.join(os.path.dirname(__file__), 'cloudabi/cloudabi.txt'))
 
-cpp_skip={
+cpp_skip = {
     'auxtype',
     'auxv',
     'ciovec',
